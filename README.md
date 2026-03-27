@@ -1,2 +1,1 @@
-# Porto
-Private Off-chain Resource Tracking and Orchestration.
+# Porto: Private Off-chain Resource Tracking and Orchestration.
