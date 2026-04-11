@@ -11,7 +11,8 @@ report_telemetry(Pid, Metrics) ->
     gen_server:cast(Pid, {report, Metrics}).
 
 init([ResourceId]) ->
-    io:format("Starting Resource Actor [~p]~n", [ResourceId]),
+    pg:join(porto_cluster, porto_resources, self()),
+    io:format("Starting Resource Actor [~p] and joining global cluster group~n", [ResourceId]),
     {ok, #{id => ResourceId, state_history => []}}.
 
 handle_cast({report, Metrics}, State = #{id := RId, state_history := History}) ->

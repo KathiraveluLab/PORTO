@@ -14,6 +14,12 @@ init([]) ->
                  intensity => 0,
                  period => 1},
     ChildSpecs = [
+        #{id => porto_pg_cluster,
+          start => {pg, start_link, [porto_cluster]},
+          restart => permanent,
+          shutdown => 5000,
+          type => worker,
+          modules => [pg]},
         #{id => porto_leo_bridge,
           start => {porto_leo_bridge, start_link, []},
           restart => permanent,
