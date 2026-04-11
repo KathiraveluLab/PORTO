@@ -18,8 +18,12 @@ handle_call({verify_proof, StateData}, From, State = #{pending_verifications := 
     io:format("Delegating zero-knowledge proof generation to Leo for state: ~p~n", [StateData]),
     
     %% Format the execution command pointing to the natively compiled Rust framework.
-    %% This strictly delegates the cryptographic processing OUT of the BEAM VM.
-    Command = "./heavy_workload",
+    %% This strictly delegates the cryptographic processing OUT of the BEAM VM to the Aleo network layer.
+    Payload = case StateData of
+        #{id := RId} when is_integer(RId) -> integer_to_list(RId) ++ "u32";
+        _ -> "1u32"
+    end,
+    Command = "leo run main " ++ Payload,
     
     %% Open an OS Port to securely run the Rust/Leo compilation securely in another OS process.
     %% We set the working directory strictly to the circuits folder.

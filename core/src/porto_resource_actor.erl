@@ -12,16 +12,31 @@ report_telemetry(Pid, Metrics) ->
 
 init([ResourceId]) ->
     pg:join(porto_cluster, porto_resources, self()),
-    io:format("Starting Resource Actor [~p] and joining global cluster group~n", [ResourceId]),
-    {ok, #{id => ResourceId, state_history => []}}.
+    
+    %% Mnesia Crash Recovery Rehydration Implementation
+    RecoveredHistory = mnesia:activity(transaction, fun() ->
+        case mnesia:read({porto_state, ResourceId}) of
+            [{porto_state, ResourceId, SavedHistory}] -> SavedHistory;
+            [] -> []
+        end
+    end),
+    
+    io:format("Starting Resource Actor [~p] and joining global cluster group. State length: ~p~n", [ResourceId, length(RecoveredHistory)]),
+    {ok, #{id => ResourceId, state_history => RecoveredHistory}}.
 
 handle_cast({report, Metrics}, State = #{id := RId, state_history := History}) ->
     io:format("Actor ~p received telemetry: ~p~n", [RId, Metrics]),
-    %% Accumulate telemetry until a ZK verification block is needed.
-    %% Trigger Leo verification through the Bridge manually for POC:
+    NewHistory = [Metrics | History],
+    
+    %% Transactional Database Record Persistence
+    mnesia:activity(transaction, fun() ->
+        mnesia:write({porto_state, RId, NewHistory})
+    end),
+
+    %% Trigger Leo verification through the Bridge automatically mapping local constraints
     {ok, ProofResult} = porto_leo_bridge:verify_proof(Metrics),
     io:format("Zero-Knowledge Verification result for ~p: ~p~n", [RId, ProofResult]),
-    {noreply, State#{state_history => [Metrics | History]}};
+    {noreply, State#{state_history => NewHistory}};
 
 handle_cast(_Msg, State) ->
     {noreply, State}.

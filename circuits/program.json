@@ -1,6 +1,6 @@
 {
-    "program": "porto_circuit.aleo",
+    "program": "porto_circuits.aleo",
     "version": "0.1.0",
-    "description": "PORTO Framework ZK Proof Circuit",
+    "description": "PORTO Resource Constraints Validation",
     "license": "Apache-2.0"
 }
