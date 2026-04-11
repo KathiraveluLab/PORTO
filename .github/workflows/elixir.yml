@@ -31,6 +31,11 @@ jobs:
         path: ~/.cache/rebar3
         key: ${{ runner.os }}-rebar3-${{ hashFiles('**/rebar.lock') }}
         restore-keys: ${{ runner.os }}-rebar3-
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+    - name: Compile benchmark kernel
+      run: rustc heavy_workload.rs -O -o heavy_workload
+      working-directory: ${{ github.workspace }}/circuits
     - name: Compile PORTO Core
       run: rebar3 compile
     - name: Run Unit Tests
