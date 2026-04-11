@@ -22,3 +22,4 @@ _checkouts/
 _bmad
 *.env
 .vscode
+_paper
