@@ -1,0 +1,15 @@
+{application, porto_core,
+ [{description, "PORTO Core Orchestration Engine"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {mod, {porto_core_app, []}},
+  {applications,
+   [kernel,
+    stdlib
+   ]},
+  {env,[]},
+  {modules, []},
+
+  {licenses, ["Apache-2.0"]},
+  {links, []}
+ ]}.

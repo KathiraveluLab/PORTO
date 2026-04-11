@@ -1,0 +1,6 @@
+{
+    "program": "porto_circuit.aleo",
+    "version": "0.1.0",
+    "description": "PORTO Framework ZK Proof Circuit",
+    "license": "Apache-2.0"
+}
