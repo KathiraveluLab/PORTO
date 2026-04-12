@@ -49,47 +49,6 @@ handle_body(track, Body, Req, State) ->
         {ok, Req2, State}
     end;
 
-%% ---- /allocate ------------------------------------------------------------
-%% Expected JSON: {"participant_id": "...", "allocation": N, "total_pool": N, "min_share": N}
+%% ---- /allocate is handled by the equitable_allocation example, not core ----
+%% See examples/equitable_allocation/core/src/ for the allocation handler.
 
-handle_body(allocate, <<>>, Req, State) ->
-    Req2 = cowboy_req:reply(400,
-        #{<<"content-type">> => <<"application/json">>},
-        <<"{\"error\": \"Empty request body\"}">>,
-        Req),
-    {ok, Req2, State};
-handle_body(allocate, Body, Req, State) ->
-    try jsx:decode(Body, [return_maps]) of
-        #{<<"participant_id">> := PId,
-          <<"allocation">>     := Alloc,
-          <<"total_pool">>     := Pool,
-          <<"min_share">>      := Min}
-          when is_binary(PId), is_integer(Alloc),
-               is_integer(Pool), is_integer(Min) ->
-            case porto_core_app:verify_allocation(PId, Alloc, Pool, Min) of
-                {ok, _} ->
-                    Req2 = cowboy_req:reply(200,
-                        #{<<"content-type">> => <<"application/json">>},
-                        <<"{\"status\": \"allocation verified\"}">>,
-                        Req),
-                    {ok, Req2, State};
-                {error, _} ->
-                    Req2 = cowboy_req:reply(422,
-                        #{<<"content-type">> => <<"application/json">>},
-                        <<"{\"error\": \"Allocation does not meet fairness constraints\"}">>,
-                        Req),
-                    {ok, Req2, State}
-            end;
-        _ ->
-            Req2 = cowboy_req:reply(400,
-                #{<<"content-type">> => <<"application/json">>},
-                <<"{\"error\": \"Missing or invalid fields: participant_id, allocation, total_pool, min_share required\"}">>,
-                Req),
-            {ok, Req2, State}
-    catch _:_ ->
-        Req2 = cowboy_req:reply(400,
-            #{<<"content-type">> => <<"application/json">>},
-            <<"{\"error\": \"Invalid JSON payload\"}">>,
-            Req),
-        {ok, Req2, State}
-    end.

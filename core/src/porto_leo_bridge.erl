@@ -1,7 +1,7 @@
 -module(porto_leo_bridge).
 -behaviour(gen_server).
 
--export([start_link/0, verify_proof/1, verify_allocation/4]).
+-export([start_link/0, verify_proof/1, verify_allocation/4, verify_quota/3, verify_eligibility/3]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 start_link() ->
@@ -13,10 +13,25 @@ verify_proof(StateData) ->
 %% Hashes the ParticipantId using SHA-256, truncates to 128 bits,
 %% and submits an allocation fairness proof to the Leo circuit.
 verify_allocation(ParticipantId, Allocation, TotalPool, MinShare) ->
-    %% SHA-256 → first 16 bytes → u128 representation
     <<Hash:128, _/binary>> = crypto:hash(sha256, term_to_binary(ParticipantId)),
     gen_server:call(?MODULE,
         {verify_allocation, Allocation, Hash, TotalPool, MinShare},
+        infinity).
+
+%% Proves that an organisation's resource usage did not exceed its quota.
+%% Usage is kept private; only the quota ceiling is public.
+verify_quota(ParticipantId, Usage, Quota) ->
+    <<Hash:128, _/binary>> = crypto:hash(sha256, term_to_binary(ParticipantId)),
+    gen_server:call(?MODULE,
+        {verify_quota, Usage, Hash, Quota},
+        infinity).
+
+%% Proves an applicant's eligibility score meets a public threshold
+%% for access to a public digital service. Score stays private.
+verify_eligibility(ApplicantId, Score, Threshold) ->
+    <<Hash:128, _/binary>> = crypto:hash(sha256, term_to_binary(ApplicantId)),
+    gen_server:call(?MODULE,
+        {verify_eligibility, Score, Hash, Threshold},
         infinity).
 
 init([]) ->
@@ -53,6 +68,30 @@ handle_call({verify_allocation, Allocation, Hash, TotalPool, MinShare}, From,
         ++ integer_to_list(TotalPool)   ++ "u32 "
         ++ integer_to_list(MinShare)    ++ "u32",
     io:format("Submitting allocation proof: ~s~n", [Command]),
+    Port = erlang:open_port({spawn, Command},
+                            [{cd, "../circuits"}, stream, exit_status, binary]),
+    NewPending = maps:put(Port, From, Pending),
+    {noreply, State#{pending_verifications => NewPending}};
+
+handle_call({verify_quota, Usage, Hash, Quota}, From,
+            State = #{pending_verifications := Pending}) ->
+    Command = "leo run verify_quota "
+        ++ integer_to_list(Usage)  ++ "u32 "
+        ++ integer_to_list(Hash)   ++ "u128 "
+        ++ integer_to_list(Quota)  ++ "u32",
+    io:format("Submitting quota compliance proof: ~s~n", [Command]),
+    Port = erlang:open_port({spawn, Command},
+                            [{cd, "../circuits"}, stream, exit_status, binary]),
+    NewPending = maps:put(Port, From, Pending),
+    {noreply, State#{pending_verifications => NewPending}};
+
+handle_call({verify_eligibility, Score, Hash, Threshold}, From,
+            State = #{pending_verifications := Pending}) ->
+    Command = "leo run verify_eligibility "
+        ++ integer_to_list(Score)     ++ "u32 "
+        ++ integer_to_list(Hash)      ++ "u128 "
+        ++ integer_to_list(Threshold) ++ "u32",
+    io:format("Submitting eligibility proof: ~s~n", [Command]),
     Port = erlang:open_port({spawn, Command},
                             [{cd, "../circuits"}, stream, exit_status, binary]),
     NewPending = maps:put(Port, From, Pending),

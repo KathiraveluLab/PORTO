@@ -1,0 +1,6 @@
+{
+    "program": "service_eligibility.aleo",
+    "version": "0.1.0",
+    "description": "PORTO Use Case: Verifiable Service Eligibility for Public Digital Services",
+    "license": "Apache-2.0"
+}

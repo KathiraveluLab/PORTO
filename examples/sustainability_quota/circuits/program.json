@@ -1,0 +1,6 @@
+{
+    "program": "sustainability_quota.aleo",
+    "version": "0.1.0",
+    "description": "PORTO Use Case: Verifiable Sustainability Quota Compliance",
+    "license": "Apache-2.0"
+}
