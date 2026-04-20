@@ -68,7 +68,7 @@ porto_benchmark:run_sync(10).
 porto_benchmark:run_porto_async(10).
 ```
 
-The benchmark measures orchestration layer overhead independently of Leo compiler startup latency. See `results.tex` for the reported values and methodology.
+The benchmark measures orchestration layer overhead independently of Leo compiler startup latency. 
 
 ### 5. HTTP API (when running as a release)
 
