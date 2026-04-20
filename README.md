@@ -31,11 +31,11 @@ setup_porto.bat
 
 ### 1. Running PORTO Core
 
-After running the setup script, the PORTO `core` is already compiled. You can boot the Erlang distributed orchestration engine natively:
+After running the setup script, the PORTO `core` is already compiled. You can boot the Erlang distributed orchestration engine natively using `rebar3 shell`. This automatically handles dependency paths and starts the application supervision tree:
 
 ```bash
 cd core
-erl -pa _build/default/lib/core/ebin
+rebar3 shell
 ```
 
 ### 2. Spawning Actors

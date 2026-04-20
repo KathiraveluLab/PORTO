@@ -61,7 +61,12 @@ if %ERRORLEVEL% neq 0 (
     :: Create rebar3.cmd wrapper
     echo @echo off > "%USERPROFILE%\.local\bin\rebar3.cmd"
     echo escript "%%~dp0rebar3" %%* >> "%USERPROFILE%\.local\bin\rebar3.cmd"
+    
+    :: Add to current session path
     set "PATH=%PATH%;%USERPROFILE%\.local\bin"
+    
+    :: Persistence: Add to User PATH via PowerShell (safer than setx for long paths)
+    powershell -Command "$oldPath = [Environment]::GetEnvironmentVariable('Path', 'User'); if ($oldPath -notlike '*\.local\bin*') { [Environment]::SetEnvironmentVariable('Path', $oldPath + ';%USERPROFILE%\.local\bin', 'User') }"
 ) else (
     echo Rebar3 is already installed and compatible.
 )
