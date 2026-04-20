@@ -9,6 +9,8 @@ echo "------------------------------------------------"
 echo "Starting PORTO & Leo Environment Setup..."
 echo "------------------------------------------------"
 
+SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
 # 1. System Dependencies
 echo "[1/5] Installing system dependencies (sudo may be required)..."
 sudo apt-get update
@@ -25,18 +27,36 @@ fi
 
 # 3. Erlang Build Tooling (Rebar3)
 echo "[3/5] Setting up Rebar3..."
-if ! command -v rebar3 >/dev/null 2>&1; then
-    mkdir -p $HOME/.local/bin
-    curl -fSL https://s3.amazonaws.com/rebar3/rebar3 -o $HOME/.local/bin/rebar3
-    chmod +x $HOME/.local/bin/rebar3
-    export PATH=$PATH:$HOME/.local/bin
-    echo 'export PATH=$PATH:$HOME/.local/bin' >> $HOME/.bashrc
+# Verify if rebar3 exists AND if it actually works (checks for BEAM compatibility)
+if ! rebar3 --version >/dev/null 2>&1; then
+    echo "Rebar3 not found or incompatible with current OTP. Bootstrapping from source..."
+    
+    # Ensure a clean slate by removing any broken version in the local bin
+    if [ -f "$HOME/.local/bin/rebar3" ]; then
+        rm "$HOME/.local/bin/rebar3"
+    fi
+    
+    mkdir -p "$HOME/.local/bin"
+    TMP_DIR=$(mktemp -d)
+    pushd "$TMP_DIR" > /dev/null
+    git clone --depth 1 https://github.com/erlang/rebar3.git
+    cd rebar3
+    ./bootstrap
+    mv rebar3 "$HOME/.local/bin/rebar3"
+    popd > /dev/null
+    rm -rf "$TMP_DIR"
+    
+    export PATH="$HOME/.local/bin:$PATH"
+    if ! grep -q ".local/bin" "$HOME/.bashrc"; then
+        echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
+    fi
+else
+    echo "Rebar3 is already installed and compatible."
 fi
 
 # 4. Leo CLI Installation
 echo "[4/5] Installing Leo CLI from source..."
 # Try to find 'leo' as a sibling of the PORTO directory first, then fallback to $HOME/leo
-SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 LEO_DIR="$SCRIPT_DIR/../leo"
 
 if [ ! -d "$LEO_DIR" ]; then
@@ -45,9 +65,10 @@ fi
 
 if [ -d "$LEO_DIR" ]; then
     echo "Found Leo at: $LEO_DIR"
-    cd "$LEO_DIR"
+    pushd "$LEO_DIR" > /dev/null
     # Essential fix: target the correct crate, not the virtual manifest
     cargo install --path crates/leo
+    popd > /dev/null
 else
     echo "Error: Leo source directory not found at $LEO_DIR"
     exit 1
@@ -55,7 +76,6 @@ fi
 
 # 5. PORTO Compilation
 echo "[5/5] Compiling PORTO core..."
-SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 cd "$SCRIPT_DIR/core"
 rebar3 compile
 

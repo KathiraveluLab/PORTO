@@ -7,22 +7,23 @@ It fundamentally solves the throughput-privacy trilemma plaguing monolithic Laye
 
 ## Build & Installation
 
-The easiest way to set up PORTO and its dependencies (Erlang, Rust, Leo CLI) is using the provided setup script:
+The easiest way to set up PORTO and its dependencies (Erlang, Rust, Leo CLI) is using the provided setup script. The script is **idempotent** and will automatically:
+*   Install missing system headers (OpenSSL, pkg-config).
+*   **Resolve OTP Version Mismatches**: It bootstraps `rebar3` from source to guarantee compatibility with your local Erlang version (fixes the common "badfile" error).
+*   Correctly build the Leo CLI from its sub-crate boundaries.
 
 ```bash
-# Linux
+# Linux (Requires sudo for system headers)
 git clone https://github.com/KathiraveluLab/PORTO
 cd PORTO
 chmod +x setup_porto.sh
 ./setup_porto.sh
 
-# Windows (Run as Administrator)
+# Windows (Run as Administrator for Chocolatey/Path setup)
 git clone https://github.com/KathiraveluLab/PORTO
 cd PORTO
 setup_porto.bat
 ```
-
-The script will automatically detect your environment, install missing system headers, and build the Leo CLI from source using the correct package manifests.
 
 ## Quick Start (Local Dry-run Execution)
 
@@ -35,7 +36,10 @@ cd core
 erl -pa _build/default/lib/core/ebin
 ```
 
+### 2. Spawning Actors
+
 Inside the Erlang shell, you can dynamically spin up your off-chain tracking actors using the provided API. This will seamlessly spawn concurrent OS processes mapping to your Aleo execution circuits:
+
 ```erlang
 % Spawns a new actor to track "ResourceA" and validate bounds via zero-knowledge
 porto_core_app:track_resource("ResourceA").
