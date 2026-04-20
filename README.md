@@ -82,21 +82,24 @@ curl -X POST http://localhost:8080/track \
 
 The port defaults to `8080` and can be overridden via the `$PORT` environment variable.
 
-## Troubleshooting & Persistence
+## Troubleshooting & Reset
 
-### Resetting the Local State
-PORTO uses Mnesia for off-chain state persistence. Data is stored in `core/data/`. To wipe the local database and start fresh:
+If you encounter "badfile" errors, BEAM mismatches after an Erlang/OTP upgrade, or wish to reset the local database, use the provided cleanup utility.
+
+### Running the Cleanup Utility
+This utility will prompt for confirmation before deleting any data. It clears build artifacts, resets the Mnesia database, and performs an **ASCII-Safety Scan** to ensure no toolchain-breaking characters have been introduced.
+
 ```bash
-rm -rf core/data/
+# Linux
+chmod +x cleanup.sh
+./cleanup.sh
+
+# Windows
+cleanup.bat
 ```
 
-### Clean Rebuild
-If you encounter "badfile" errors or BEAM mismatches after an Erlang/OTP upgrade, clear the build cache:
-```bash
-cd core
-rm -rf _build
-rebar3 compile
-```
-
-### ASCII-Safety
-This repository is strictly ASCII-safe. To ensure compatibility with the Erlang/Leo toolchains, avoid using non-ASCII characters (e.g., em-dashes) in code or configuration files.
+### Manual Cleanup (Advanced)
+If you prefer to perform individual steps manually:
+*   **Reset Mnesia State**: `rm -rf core/data/`
+*   **Clear Build Cache**: `rm -rf core/_build/`
+*   **ASCII Check**: Ensure no non-ASCII characters (like em-dashes `—`) exist in `core/` or `circuits/`.

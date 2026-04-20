@@ -9,7 +9,7 @@ echo "------------------------------------------------"
 echo "Starting PORTO & Leo Environment Setup..."
 echo "------------------------------------------------"
 
-SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # 1. System Dependencies
 echo "[1/5] Installing system dependencies (sudo may be required)..."
@@ -38,12 +38,13 @@ if ! rebar3 --version >/dev/null 2>&1; then
     
     mkdir -p "$HOME/.local/bin"
     TMP_DIR=$(mktemp -d)
-    pushd "$TMP_DIR" > /dev/null
-    git clone --depth 1 https://github.com/erlang/rebar3.git
-    cd rebar3
-    ./bootstrap
-    mv rebar3 "$HOME/.local/bin/rebar3"
-    popd > /dev/null
+    (
+        cd "$TMP_DIR"
+        git clone --depth 1 https://github.com/erlang/rebar3.git
+        cd rebar3
+        ./bootstrap
+        mv rebar3 "$HOME/.local/bin/rebar3"
+    )
     rm -rf "$TMP_DIR"
     
     export PATH="$HOME/.local/bin:$PATH"
@@ -65,10 +66,11 @@ fi
 
 if [ -d "$LEO_DIR" ]; then
     echo "Found Leo at: $LEO_DIR"
-    pushd "$LEO_DIR" > /dev/null
-    # Essential fix: target the correct crate, not the virtual manifest
-    cargo install --path crates/leo
-    popd > /dev/null
+    (
+        cd "$LEO_DIR"
+        # Essential fix: target the correct crate, not the virtual manifest
+        cargo install --path crates/leo
+    )
 else
     echo "Error: Leo source directory not found at $LEO_DIR"
     exit 1
