@@ -1,5 +1,5 @@
 # PORTO
-Private Off-chain Resource Tracking and Orchestration
+**Private Off-chain Resource Tracking and Orchestration**
 
 PORTO is a radically new decentralized framework that implements an Actor-Model orchestration engine using Erlang/OTP natively integrated with the Aleo Zero-Knowledge (ZK) execution layer via the Leo CLI.
 
