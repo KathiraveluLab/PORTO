@@ -11,6 +11,7 @@ The easiest way to set up PORTO and its dependencies (Erlang, Rust, Leo CLI) is 
 *   Install missing system headers (OpenSSL, pkg-config).
 *   **Resolve OTP Version Mismatches**: It bootstraps `rebar3` from source to guarantee compatibility with your local Erlang version (fixes the common "badfile" error).
 *   Correctly build the Leo CLI from its sub-crate boundaries.
+*   **Compile the Benchmark Kernel**: Automatically builds the native Rust workload kernel needed for performance testing.
 
 ### Linux (Requires sudo for system headers)
 ```bash
@@ -47,9 +48,9 @@ Inside the Erlang shell, you can dynamically spin up your off-chain tracking act
 porto_core_app:track_resource("ResourceA").
 ```
 
-### 3. Compiling the Benchmark Kernel
+### 3. Compiling the Benchmark Kernel (Optional/Manual)
 
-The performance benchmarks require a native Rust binary that simulates ZK computation cost. Compile it once before running benchmarks:
+The setup script already compiles the native Rust binary that simulates ZK computation cost. If you need to recompile it manually:
 
 ```bash
 cd circuits

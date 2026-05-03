@@ -11,22 +11,22 @@ echo ------------------------------------------------
 :: 1. Chocolatey Installation
 where choco >nul 2>nul
 if %ERRORLEVEL% neq 0 (
-    echo [1/6] Chocolatey not found. Attempting to install...
+    echo [1/7] Chocolatey not found. Attempting to install...
     powershell -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
     if %ERRORLEVEL% neq 0 (
         echo Error: Failed to install Chocolatey. Please run this script as Administrator.
         exit /b 1
     )
 ) else (
-    echo [1/6] Chocolatey is already installed.
+    echo [1/7] Chocolatey is already installed.
 )
 
 :: 2. System Dependencies via Choco
-echo [2/6] Installing dependencies via Chocolatey...
+echo [2/7] Installing dependencies via Chocolatey...
 choco install git erlang rustup-init openssl -y
 
 :: 3. Rust Environment Setup
-echo [3/6] Initializing Rust environment...
+echo [3/7] Initializing Rust environment...
 where cargo >nul 2>nul
 if %ERRORLEVEL% neq 0 (
     rustup-init.exe -y
@@ -34,7 +34,7 @@ if %ERRORLEVEL% neq 0 (
 )
 
 :: 4. Erlang Build Tooling (Rebar3)
-echo [4/6] Setting up Rebar3...
+echo [4/7] Setting up Rebar3...
 :: Verify if rebar3 exists AND if it actually works (checks for BEAM compatibility)
 rebar3 --version >nul 2>nul
 if %ERRORLEVEL% neq 0 (
@@ -72,7 +72,7 @@ if %ERRORLEVEL% neq 0 (
 )
 
 :: 5. Leo CLI Installation
-echo [5/6] Installing Leo CLI from source...
+echo [5/7] Installing Leo CLI from source...
 set "LEO_DIR=%SCRIPT_DIR%..\leo"
 
 if not exist "%LEO_DIR%" (
@@ -90,9 +90,15 @@ if exist "%LEO_DIR%" (
 )
 
 :: 6. PORTO Compilation
-echo [6/6] Compiling PORTO core...
+echo [6/7] Compiling PORTO core...
 pushd "%SCRIPT_DIR%core"
 rebar3 compile
+popd
+
+:: 7. Benchmark Kernel Compilation
+echo [7/7] Compiling the benchmark kernel...
+pushd "%SCRIPT_DIR%circuits"
+rustc heavy_workload.rs -O -o heavy_workload.exe
 popd
 
 echo ------------------------------------------------

@@ -12,6 +12,7 @@ echo "This script will PERMANENTLY DELETE:"
 echo "1. Erlang build artifacts (core/_build)"
 echo "2. Local orchestration state (core/data)"
 echo "3. Leo circuit build artifacts (build/ and outputs/)"
+echo "4. Benchmark kernel binaries (circuits/heavy_workload)"
 echo ""
 read -p "Are you sure you want to proceed? (y/N): " confirm
 
@@ -23,17 +24,20 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo ""
-echo "[1/4] Cleaning Erlang build artifacts..."
+echo "[1/5] Cleaning Erlang build artifacts..."
 rm -rf "$SCRIPT_DIR/core/_build"
 
-echo "[2/4] Resetting local orchestration state (Mnesia)..."
+echo "[2/5] Resetting local orchestration state (Mnesia)..."
 rm -rf "$SCRIPT_DIR/core/data"
 
-echo "[3/4] Cleaning Leo circuit artifacts..."
+echo "[3/5] Cleaning Leo circuit artifacts..."
 # Find and remove all Leo build/ and outputs/ directories recursively
 find "$SCRIPT_DIR" -type d \( -name "build" -o -name "outputs" \) -path "*/circuits/*" -exec rm -rf {} +
 
-echo "[4/4] Performing ASCII-Safety Scan..."
+echo "[4/5] Removing benchmark kernel binaries..."
+rm -f "$SCRIPT_DIR/circuits/heavy_workload"
+
+echo "[5/5] Performing ASCII-Safety Scan..."
 # Search for the toolchain-breaking em-dash in core, circuits, and examples
 BAD_CHARS=$(grep -r "—" "$SCRIPT_DIR/core" "$SCRIPT_DIR/circuits" "$SCRIPT_DIR/examples" 2>/dev/null || true)
 

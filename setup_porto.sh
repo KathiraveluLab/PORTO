@@ -12,12 +12,12 @@ echo "------------------------------------------------"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # 1. System Dependencies
-echo "[1/5] Installing system dependencies (sudo may be required)..."
+echo "[1/6] Installing system dependencies (sudo may be required)..."
 sudo apt-get update
 sudo apt-get install -y build-essential pkg-config libssl-dev git curl erlang
 
 # 2. Rust Environment
-echo "[2/5] Setting up Rust environment..."
+echo "[2/6] Setting up Rust environment..."
 if command -v rustup >/dev/null 2>&1; then
     rustup update
 else
@@ -26,7 +26,7 @@ else
 fi
 
 # 3. Erlang Build Tooling (Rebar3)
-echo "[3/5] Setting up Rebar3..."
+echo "[3/6] Setting up Rebar3..."
 # Verify if rebar3 exists AND if it actually works (checks for BEAM compatibility)
 if ! rebar3 --version >/dev/null 2>&1; then
     echo "Rebar3 not found or incompatible with current OTP. Bootstrapping from source..."
@@ -56,7 +56,7 @@ else
 fi
 
 # 4. Leo CLI Installation
-echo "[4/5] Installing Leo CLI from source..."
+echo "[4/6] Installing Leo CLI from source..."
 # Try to find 'leo' as a sibling of the PORTO directory first, then fallback to $HOME/leo
 LEO_DIR="$SCRIPT_DIR/../leo"
 
@@ -77,9 +77,14 @@ else
 fi
 
 # 5. PORTO Compilation
-echo "[5/5] Compiling PORTO core..."
+echo "[5/6] Compiling PORTO core..."
 cd "$SCRIPT_DIR/core"
 rebar3 compile
+
+# 6. Benchmark Kernel Compilation
+echo "[6/6] Compiling the benchmark kernel..."
+cd "$SCRIPT_DIR/circuits"
+rustc heavy_workload.rs -O -o heavy_workload
 
 echo "------------------------------------------------"
 echo "Setup Complete!"
