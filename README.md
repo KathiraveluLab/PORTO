@@ -5,6 +5,8 @@ PORTO is a radically new decentralized framework that implements an Actor-Model 
 
 It fundamentally solves the throughput-privacy trilemma plaguing monolithic Layer-2 sequencers by completely isolating state logic across multi-node parallel environments. Mathematical confidentiality is generated strictly off-chain while verifiable cryptographic proofs are transmitted to the Aleo ecosystem.
 
+See [Tutorial.md](Tutorial.md) for a deep dive into the philosophy and practical usage of PORTO.
+
 ## Build & Installation
 
 The easiest way to set up PORTO and its dependencies (Erlang, Rust, Leo CLI) is using the provided setup script. The script is **idempotent** and will automatically:
