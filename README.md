@@ -59,7 +59,7 @@ rustc heavy_workload.rs -O -o heavy_workload
 
 ### 4. Running Benchmarks
 
-From the `core/` directory, launch the Erlang shell and run:
+From the same Erlang shell (or by launching a new one in `core/` via `rebar3 shell`), run:
 
 ```erlang
 % Synchronous baseline (monolithic sequencer model), N=10 proofs
