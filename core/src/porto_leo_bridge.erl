@@ -107,7 +107,7 @@ handle_cast(_Msg, State) ->
     {noreply, State}.
 
 %% Capture the streamed stdout from the Leo process
-handle_info({Port, {data, Data}}, State) ->
+handle_info({_Port, {data, Data}}, State) ->
     io:format("Leo Execution Output: ~s~n", [Data]),
     {noreply, State};
 

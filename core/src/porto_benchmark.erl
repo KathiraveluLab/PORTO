@@ -27,7 +27,7 @@ run_sync(N) ->
         loop_sync(N)
     end),
     TimeMs = TimeUs / 1000.0,
-    Throughput = case TimeMs of 0.0 -> 0; _ -> N / (TimeMs / 1000.0) end,
+    Throughput = case TimeMs of +0.0 -> 0; _ -> N / (TimeMs / 1000.0) end,
     io:format("=== SYNC BASELINE (N=~p) ===~nTotal Time: ~p ms~nThroughput: ~p TPS~n",
               [N, TimeMs, Throughput]),
     {TimeMs, Throughput}.
@@ -49,7 +49,7 @@ run_porto_async(N) ->
         wait_async(N)
     end),
     TimeMs = TimeUs / 1000.0,
-    Throughput = case TimeMs of 0.0 -> 0; _ -> N / (TimeMs / 1000.0) end,
+    Throughput = case TimeMs of +0.0 -> 0; _ -> N / (TimeMs / 1000.0) end,
     io:format("=== PORTO ASYNC (N=~p) ===~nTotal Time: ~p ms~nThroughput: ~p TPS~n",
               [N, TimeMs, Throughput]),
     {TimeMs, Throughput}.
