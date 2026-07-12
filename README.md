@@ -106,3 +106,10 @@ If you prefer to perform individual steps manually:
 *   **Reset Mnesia State**: `rm -rf core/data/`
 *   **Clear Build Cache**: `rm -rf core/_build/`
 *   **ASCII Check**: Ensure no non-ASCII characters (like em-dashes `—`) exist in `core/` or `circuits/`.
+
+## Citation
+
+If you use this work in your research, please cite the following publication:
+
+* Kathiravelu, P. and Galinac Grbac, T. **Private Off-chain Resource Tracking and Orchestration: An Actor-Model Approach to Zero-Knowledge Computation.** In _the IEEE International Symposium on Systems Engineering (ISSE)._ Accepted. 8 pages. September 2026.
+
