@@ -3,7 +3,7 @@
 
 PORTO is a novel decentralized framework that implements an Actor-Model orchestration engine using Erlang/OTP natively integrated with the Aleo Zero-Knowledge (ZK) execution layer via the Leo CLI.
 
-It fundamentally solves the throughput-privacy trilemma plaguing monolithic Layer-2 sequencers by completely isolating state logic across multi-node parallel environments. Mathematical confidentiality is generated strictly off-chain while verifiable cryptographic proofs are transmitted to the Aleo ecosystem.
+It resolves the tension between **throughput, data privacy, and decentralized verifiability**, a trilemma concerning monolithic Layer-2 sequencers, by completely isolating state logic across parallel, supervisor-monitored environments. Confidentiality is preserved by performing zero-knowledge computations off-chain, while verifiable cryptographic proofs are committed to the Aleo ledger to guarantee correct execution.
 
 See [Tutorial.md](Tutorial.md) for a deep dive into the philosophy and practical usage of PORTO.
 
