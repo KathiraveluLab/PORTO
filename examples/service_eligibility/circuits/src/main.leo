@@ -17,7 +17,7 @@
 // It reveals nothing about the applicant's actual score or identity.
 program service_eligibility.aleo {
 
-    transition verify_eligibility(
+    fn verify_eligibility(
         private score: u32,
         private applicant_hash: u128,
         public threshold: u32

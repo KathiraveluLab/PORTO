@@ -10,7 +10,7 @@
 // (a) the minimum guaranteed share, and (b) the pool capacity bound.
 program equitable_allocation.aleo {
 
-    transition verify_allocation(
+    fn verify_allocation(
         private allocation: u32,
         private participant_hash: u128,
         public total_pool: u32,

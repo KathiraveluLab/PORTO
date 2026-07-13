@@ -14,7 +14,7 @@
 // It reveals nothing about the actual consumption level.
 program sustainability_quota.aleo {
 
-    transition verify_quota(
+    fn verify_quota(
         private usage: u32,
         private participant_hash: u128,
         public quota: u32

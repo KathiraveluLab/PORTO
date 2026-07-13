@@ -1,5 +1,5 @@
 -module(porto_benchmark).
--export([run_sync/1, run_porto_async/1]).
+-export([run_sync/1, run_porto_async/1, run_leo_sync/1, run_leo_porto_async/1]).
 
 %% Benchmark Methodology Note:
 %% ===========================
@@ -53,6 +53,43 @@ run_porto_async(N) ->
     io:format("=== PORTO ASYNC (N=~p) ===~nTotal Time: ~p ms~nThroughput: ~p TPS~n",
               [N, TimeMs, Throughput]),
     {TimeMs, Throughput}.
+
+%% Live Leo compiler benchmarks (End-to-End measurement)
+run_leo_sync(N) ->
+    {TimeUs, _} = timer:tc(fun() ->
+        loop_leo_sync(N)
+    end),
+    TimeMs = TimeUs / 1000.0,
+    Throughput = case TimeMs of +0.0 -> 0; _ -> N / (TimeMs / 1000.0) end,
+    io:format("=== LEO LIVE SYNC (N=~p) ===~nTotal Time: ~p ms~nThroughput: ~p TPS~n",
+              [N, TimeMs, Throughput]),
+    {TimeMs, Throughput}.
+
+loop_leo_sync(0) -> ok;
+loop_leo_sync(N) ->
+    run_leo_command(N),
+    loop_leo_sync(N - 1).
+
+run_leo_porto_async(N) ->
+    {TimeUs, _} = timer:tc(fun() ->
+        Parent = self(),
+        [spawn(fun() ->
+            run_leo_command(I),
+            Parent ! {done, I}
+        end) || I <- lists:seq(1, N)],
+        wait_async(N)
+    end),
+    TimeMs = TimeUs / 1000.0,
+    Throughput = case TimeMs of +0.0 -> 0; _ -> N / (TimeMs / 1000.0) end,
+    io:format("=== LEO LIVE ASYNC (N=~p) ===~nTotal Time: ~p ms~nThroughput: ~p TPS~n",
+              [N, TimeMs, Throughput]),
+    {TimeMs, Throughput}.
+
+run_leo_command(I) ->
+    Command = "leo run main " ++ integer_to_list(I) ++ "u32",
+    Port = erlang:open_port({spawn, Command},
+                            [{cd, ?BENCHMARK_DIR}, stream, exit_status, binary]),
+    collect_port(Port).
 
 %% Spawns the benchmark kernel as an isolated OS process and waits for exit.
 run_kernel() ->

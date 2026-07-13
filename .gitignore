@@ -28,11 +28,12 @@ _paper
 # Rust build artifacts in circuits/
 circuits/target/
 circuits/heavy_workload
+circuits/concurrent_baseline
 circuits/*.rs.bk
 
 # Leo build outputs
-circuits/build/
-circuits/outputs/
+**/build/
+**/outputs/
 
 # Mnesia runtime data
 core/data/
