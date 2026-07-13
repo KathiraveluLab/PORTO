@@ -50,28 +50,65 @@ Inside the Erlang shell, you can dynamically spin up your off-chain tracking act
 porto_core_app:track_resource("ResourceA").
 ```
 
-### 3. Compiling the Benchmark Kernel (Optional/Manual)
+### 3. Compiling the Benchmark Kernels (Optional/Manual)
 
-The setup script already compiles the native Rust binary that simulates ZK computation cost. If you need to recompile it manually:
+The setup script already compiles the native Rust binaries that simulate ZK computation cost and run the concurrent baseline. If you need to recompile them manually:
 
 ```bash
 cd circuits
+
+# Compile the workload proxy kernel
 rustc heavy_workload.rs -O -o heavy_workload
+
+# Compile the native Rust concurrent baseline
+rustc concurrent_baseline.rs -O -o concurrent_baseline
 ```
 
 ### 4. Running Benchmarks
 
-From the same Erlang shell (or by launching a new one in `core/` via `rebar3 shell`), run:
+PORTO provides two suites of benchmarks: (1) **Orchestration Layer Overhead (Workload Proxy)**, and (2) **End-to-End Execution (Live Leo ZK Compiler)**.
 
-```erlang
-% Synchronous baseline (monolithic sequencer model), N=10 proofs
-porto_benchmark:run_sync(10).
+#### Option A: Running from the Erlang Shell
 
-% PORTO parallel actor dispatch, N=10 proofs
-porto_benchmark:run_porto_async(10).
+Start the Erlang VM in the `core/` directory:
+```bash
+cd core
+rebar3 shell
 ```
 
-The benchmark measures orchestration layer overhead independently of Leo compiler startup latency. 
+Then, execute the benchmark functions in the Erlang shell:
+```erlang
+% --- 1. Orchestration Layer Overhead (Workload Proxy) ---
+% Synchronous baseline (monolithic sequencer model), N=10 tasks
+porto_benchmark:run_sync(10).
+
+% PORTO parallel actor dispatch, N=10 tasks
+porto_benchmark:run_porto_async(10).
+
+% --- 2. End-to-End Execution (Live Leo ZK Compiler) ---
+% Synchronous baseline running live Leo compiler, N=10 tasks
+porto_benchmark:run_leo_sync(10).
+
+% PORTO parallel actor dispatch running live Leo compiler, N=10 tasks
+porto_benchmark:run_leo_porto_async(10).
+```
+
+#### Option B: Running directly from the Command Line
+
+You can run the entire suite in non-interactive mode directly from your shell:
+```bash
+erl -pa _build/default/lib/*/ebin -noshell -eval \
+"porto_benchmark:run_sync(10), \
+ porto_benchmark:run_porto_async(10), \
+ porto_benchmark:run_leo_sync(10), \
+ porto_benchmark:run_leo_porto_async(10), \
+ init:stop()."
+```
+
+To run the native Rust concurrent baseline (with $N=10$ tasks and $8$ worker threads):
+```bash
+./circuits/concurrent_baseline 10 8
+``` 
 
 ### 5. HTTP API (when running as a release)
 
