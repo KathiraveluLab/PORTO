@@ -49,54 +49,35 @@ handle_call({verify_proof, StateData}, From, State = #{pending_verifications := 
     ParsedId = maps:get(<<"id">>, StructuredData, 1),
     
     Payload = integer_to_list(ParsedId) ++ "u32",
-    Command = "leo run main " ++ Payload,
-    
-    %% Open an OS Port to securely run the Rust/Leo compilation securely in another OS process.
-    %% We set the working directory strictly to the circuits folder.
-    Port = erlang:open_port({spawn, Command}, 
-                            [{cd, "../circuits"}, stream, exit_status, binary]),
-                            
-    %% Store the caller reference (`From`) to respond asynchronously without blocking other actors
+    Port = build_cmd("main", Payload, "../circuits"),
     NewPending = maps:put(Port, From, Pending),
     {noreply, State#{pending_verifications => NewPending}};
 
 handle_call({verify_allocation, Allocation, Hash, TotalPool, MinShare}, From,
             State = #{pending_verifications := Pending}) ->
-    Command = "leo run verify_allocation "
-        ++ integer_to_list(Allocation)  ++ "u32 "
+    Inputs = integer_to_list(Allocation)  ++ "u32 "
         ++ integer_to_list(Hash)        ++ "u128 "
         ++ integer_to_list(TotalPool)   ++ "u32 "
         ++ integer_to_list(MinShare)    ++ "u32",
-    io:format("Submitting allocation proof: ~s~n", [Command]),
-    Port = erlang:open_port({spawn, Command},
-                            [{cd, "../examples/equitable_allocation/circuits"},
-                             stream, exit_status, binary]),
+    Port = build_cmd("verify_allocation", Inputs, "../examples/equitable_allocation/circuits"),
     NewPending = maps:put(Port, From, Pending),
     {noreply, State#{pending_verifications => NewPending}};
 
 handle_call({verify_quota, Usage, Hash, Quota}, From,
             State = #{pending_verifications := Pending}) ->
-    Command = "leo run verify_quota "
-        ++ integer_to_list(Usage)  ++ "u32 "
+    Inputs = integer_to_list(Usage)  ++ "u32 "
         ++ integer_to_list(Hash)   ++ "u128 "
         ++ integer_to_list(Quota)  ++ "u32",
-    io:format("Submitting quota compliance proof: ~s~n", [Command]),
-    Port = erlang:open_port({spawn, Command},
-                            [{cd, "../examples/sustainability_quota/circuits"},
-                             stream, exit_status, binary]),
+    Port = build_cmd("verify_quota", Inputs, "../examples/sustainability_quota/circuits"),
     NewPending = maps:put(Port, From, Pending),
     {noreply, State#{pending_verifications => NewPending}};
 
 handle_call({verify_eligibility, Score, Hash, Threshold}, From,
             State = #{pending_verifications := Pending}) ->
-    Command = "leo run verify_eligibility "
-        ++ integer_to_list(Score)     ++ "u32 "
+    Inputs = integer_to_list(Score)     ++ "u32 "
         ++ integer_to_list(Hash)      ++ "u128 "
         ++ integer_to_list(Threshold) ++ "u32",
-    io:format("Submitting eligibility proof: ~s~n", [Command]),
-    Port = erlang:open_port({spawn, Command},
-                            [{cd, "../examples/service_eligibility/circuits"},
-                             stream, exit_status, binary]),
+    Port = build_cmd("verify_eligibility", Inputs, "../examples/service_eligibility/circuits"),
     NewPending = maps:put(Port, From, Pending),
     {noreply, State#{pending_verifications => NewPending}};
 
@@ -133,3 +114,29 @@ terminate(_Reason, _State) ->
 
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
+
+%% Helper function to construct and execute the Leo CLI command based on runtime configuration
+build_cmd(FunctionName, Inputs, CircuitPath) ->
+    Mode = case application:get_env(core, leo_mode) of
+        {ok, M} -> M;
+        _ -> local
+    end,
+    Command = case Mode of
+        live ->
+            PrivKey = case application:get_env(core, aleo_private_key) of
+                {ok, K} -> K;
+                _ -> ""
+            end,
+            Endpoint = case application:get_env(core, aleo_node_endpoint) of
+                {ok, E} -> E;
+                _ -> "https://api.explorer.provable.com/v1"
+            end,
+            "leo execute " ++ FunctionName ++ " " ++ Inputs ++
+            " --network testnet --broadcast --private-key " ++ PrivKey ++
+            " --endpoint " ++ Endpoint;
+        _ ->
+            "leo run " ++ FunctionName ++ " " ++ Inputs
+    end,
+    io:format("PORTO Leo Bridge: spawning: ~s~n", [Command]),
+    erlang:open_port({spawn, Command},
+                     [{cd, CircuitPath}, stream, exit_status, binary]).

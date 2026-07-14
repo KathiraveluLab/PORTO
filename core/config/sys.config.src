@@ -13,7 +13,16 @@
     {node_cookie,  porto_dev_cookie},
 
     %% Leo CLI executable path
-    {leo_bin,      "leo"}
+    {leo_bin,      "leo"},
+
+    %% Leo Execution Mode (Env: LEO_MODE): local | live
+    {leo_mode, local},
+
+    %% Aleo account private key for signing live network transactions (Env: ALEO_PRIVATE_KEY)
+    {aleo_private_key, ""},
+
+    %% Aleo network node REST API endpoint (Env: ALEO_NODE_ENDPOINT)
+    {aleo_node_endpoint, "https://api.explorer.provable.com/v1"}
   ]},
 
   {mnesia, [

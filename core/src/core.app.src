@@ -9,7 +9,11 @@
     jsx,
     cowboy
    ]},
-  {env,[]},
+  {env,[
+    {leo_mode, local},
+    {aleo_private_key, ""},
+    {aleo_node_endpoint, "https://api.explorer.provable.com/v1"}
+  ]},
   {modules, []},
 
   {licenses, ["Apache-2.0"]},
