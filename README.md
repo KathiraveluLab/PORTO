@@ -150,3 +150,7 @@ If you use this work in your research, please cite the following publication:
 
 * Kathiravelu, P. and Galinac Grbac, T. **Private Off-chain Resource Tracking and Orchestration: An Actor-Model Approach to Zero-Knowledge Computation.** In _the IEEE International Symposium on Systems Engineering (ISSE)._ Accepted. 8 pages. September 2026.
 
+
+## Acknowledgments
+
+This work is funded by the EU NextGeneration under the Juraj Dobrila University of Pula institutional research project number IIP_UNIPU_010162.
